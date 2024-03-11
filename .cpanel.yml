@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/lal/public_html/cricketApp
+    - export DEPLOYPATH=/home/lal/public_html/
     - /bin/cp * $DEPLOYPATH
    
