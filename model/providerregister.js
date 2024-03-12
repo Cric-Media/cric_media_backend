@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const validator = require("validator");
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 
@@ -18,7 +18,8 @@ const empoleeSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       unique: true,
-      validate(value) {
+      validate(value)
+      {
         if (!validator.isEmail(value)) {
           throw new Error("Invalid Email");
         }
@@ -46,7 +47,8 @@ const empoleeSchema = new mongoose.Schema(
 
 
 
-empoleeSchema.methods.generateAuthToken = async function () {
+empoleeSchema.methods.generateAuthToken = async function ()
+{
   try {
     const token = jwt.sign({ _id: this._id.toString() }, SECRET, {
       expiresIn: "30d",
@@ -62,12 +64,13 @@ empoleeSchema.methods.generateAuthToken = async function () {
   }
 };
 
-// empoleeSchema.pre("save", async function (next) {
-//   if (this.isModified("password")) {
-//     this.password = await bcrypt.hash(this.password, 10);
-//   }
-//   next();
-// });
+empoleeSchema.pre("save", async function (next)
+{
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
 
 const providerRegister = new mongoose.model("userauth", empoleeSchema);
 
