@@ -56,7 +56,7 @@ function generateOTP()
 }
 router.get("/", (req, res) =>
 {
-  res.json({ status: 200, message: "THIS IS HOME PAGE", data: null });
+  res.json({ status: 200, message: "THIS IS HOME PAGE into development server", data: null });
 });
 router.post("/signup", async (req, res) =>
 {
@@ -101,8 +101,8 @@ router.post("/signup", async (req, res) =>
         });
       }
     });
-   
-    
+
+
   } catch (error) {
     console.log(error);
     res.status(400).json({ status: 400, success: false, message: "not found", data: null });
