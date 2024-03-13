@@ -57,7 +57,7 @@ function generateOTP()
 }
 router.get("/", (req, res) =>
 {
-  res.json({ status: 200, message: "THIS IS HOME PAGE into development server", data: null });
+  res.json({ status: 200, success: true, message: "THIS IS HOME PAGE into development server", data: null });
 });
 router.post("/signup", async (req, res) =>
 {
@@ -150,7 +150,80 @@ router.post("/emailVrifyOtp", async (req, res) =>
     }
   } catch (error) {
     console.log(error);
-    res.status(400).json({ status: 400, message: "Invalid Otp", data: null });
+    res.status(400).json({ status: 400, success: false, message: "Invalid Otp", data: null });
+  }
+});
+router.post("/Login", async (req, res) =>
+{
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+    const oneMonthInMillis = 30 * 24 * 60 * 60 * 1000;
+    const expirationTime = new Date().getTime() + oneMonthInMillis;
+    const useremail = await providerRegister.findOne({ email: email });
+    const ismatch = await bcrypt.compare(password, useremail.password);
+
+    if (!useremail || !password) {
+      res.status(400).json({
+        status: 400,
+        message: "Enter Correct email or password",
+        data: null,
+      });
+    } else if (ismatch) {
+      const getmens = await providerRegister.findOneAndUpdate(
+        { email: email },
+        { $set: { expireIn: expirationTime } },
+        { new: true }
+      );
+      const token = await useremail.generateAuthToken();
+      res.cookie("jwt", token, { httpOnly: true });
+      res.status(200).json({
+        status: 200,
+        message: "Login Successfully",
+        success: true,
+        data: {
+          _id: useremail._id,
+          isVerified: useremail.isVarified,
+          isNewUser: useremail.isNewUser,
+          accessToken: token,
+        },
+      });
+    } else {
+      res
+        .status(404)
+        .json({ status: 400, success: false, message: "Invalid Password", data: null });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ status: 400, success: false, message: "invalid email", data: null });
+  }
+});
+router.get("/get-user-detail/:_id", async (req, res) =>
+{
+  try {
+    const _id = req.params._id;
+    const data = await providerRegister.findOne({ _id: _id }).select({
+      _id: 1,
+      email: 1,
+      Phone: 1,
+      address: 1,
+      fullname: 1,
+      ProfileImage: 1,
+    });
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "User details",
+      data: data,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "internel server error",
+      data: null,
+    });
   }
 });
 module.exports = router;
