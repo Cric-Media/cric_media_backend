@@ -226,4 +226,143 @@ router.get("/get-user-detail/:_id", async (req, res) =>
     });
   }
 });
+router.post("/send-otp-forpassword-change", async (req, res) =>
+{
+  try {
+    let email = req.body.email;
+    const mail = await providerRegister.findOne({ email: email });
+    if (!mail) {
+      res
+        .status(404)
+        .json({ status: 400, success: false, message: "This email not exist", data: null });
+    } else {
+      const random = generateOTP();
+      console.log(random);
+      const otpData = new EmailVarify({
+        email: req.body.email,
+        code: random,
+        expireIn: new Date().getTime() + 60 * 10000,
+      });
+      var transpoter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "wasimxaman13@gmail.com",
+          pass: Email_otp_pass,
+        },
+      });
+      var mailoption = {
+        from: "wasimxaman13@gmail.com",
+        to: email,
+        subject: "sending email using nodejs",
+        text: `Varify Email OTP ${random}`,
+      };
+      transpoter.sendMail(mailoption, function (error, info)
+      {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            status: 500,
+            success: false,
+            message: "Failed to send OTP email",
+            data: null,
+          });
+        } else {
+          console.log("Email sent: " + info.response);
+          res.status(201).json({
+            status: 201,
+            success: true,
+            message: "Send OTP successfully",
+            data: null,
+          });
+        }
+      });
+      const varifyemail = await otpData.save();
+      res.status(201).json({
+        status: 201,
+        message: "Send otp successfully",
+        data: { Otp: random },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "internel Server error",
+      data: null,
+    });
+  }
+});
+router.post("/password-otp-varify", async (req, res) =>
+{
+  try {
+    const email = req.body.email;
+    const code = req.body.code;
+    const mail = await EmailVarify.findOne({ code: code, email: email });
+    if (mail) {
+      const currentTime = new Date().getTime();
+      const Diff = mail.expireIn - currentTime;
+      if (Diff < 0) {
+        res.status(401).json({
+          status: 401,
+          success: false,
+          message: "otp expire with in 5 mints",
+          data: null,
+        });
+      } else {
+        res.status(200).json({
+          status: 200,
+          success: true,
+          message: "password otp varification successful",
+          data: null,
+        });
+      }
+    } else {
+      res.status(400).json({ status: 400, success: false, message: "Invalid Otp", data: null });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ status: 400, success: false, message: "Invalid Otp", data: null });
+  }
+});
+router.post("/changePassword", async (req, res) =>
+{
+  try {
+    const email = req.body.email;
+        const mailVarify = await providerRegister.findOne({ email: email });
+        const password = req.body.password;
+        const ismatch = await bcrypt.compare(password, mailVarify.password);
+        console.log(ismatch);
+        mailVarify.password = password;
+        const registered = await mailVarify.save();
+        res.status(201).json({
+          status: 201,
+          success: true,
+          message: "password change successful",
+          data: null,
+        });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ status: 400, success: false, message: "Invalid email", data: null });
+  }
+});
+const clearCollection = async () =>
+{
+  try {
+    const result = await EmailVarify.deleteMany({});
+    return result.deletedCount;
+  } catch (error) {
+    console.error("Error clearing collection:", error);
+    throw error;
+  }
+};
+cron.schedule("59 23 */1 * *", async () =>
+{
+  try {
+    const deletedCount = await clearCollection();
+    console.log(`Deleted ${deletedCount} documents.`);
+  } catch (error) {
+    console.error("Error running cron job:", error);
+  }
+});
 module.exports = router;
