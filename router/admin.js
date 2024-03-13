@@ -16,6 +16,7 @@ const cloudinary = require("cloudinary").v2;
 
 
 const EmailVarify = require("../model/varifyemail")
+const providerRegister = require("../model/providerregister")
 
 const cors = require("cors");
 var dotenv = require("dotenv");
@@ -88,6 +89,7 @@ router.post("/signup", async (req, res) =>
         console.log(error);
         res.status(500).json({
           status: 500,
+          success: false,
           message: "Failed to send OTP email",
           data: null,
         });
@@ -106,6 +108,49 @@ router.post("/signup", async (req, res) =>
   } catch (error) {
     console.log(error);
     res.status(400).json({ status: 400, success: false, message: "not found", data: null });
+  }
+});
+router.post("/emailVrifyOtp", async (req, res) =>
+{
+  try {
+    const email = req.body.email;
+    const code = req.body.code;
+    const mail = await EmailVarify.findOne({ code: code, email: email });
+    if (mail) {
+      const currentTime = new Date().getTime();
+      const Diff = mail.expireIn - currentTime;
+      if (Diff < 0) {
+        res.status(401).json({
+          status: 401,
+          message: "otp expire with in 5 mints",
+          data: null,
+        });
+      } else {
+        const registerEmp = new providerRegister({
+
+          password: req.body.password,
+          email: email,
+          fullname: req.body.fullname,
+          ProfileImage: null,
+          address: null,
+          Phone: req.body.phone,
+          isVarified: false,
+          isNewUser: true,
+        });
+        await registerEmp.save();
+        res.status(200).json({
+          status: 200,
+          success: true,
+          message: "email varification successful",
+          data: null,
+        });
+      }
+    } else {
+      res.status(400).json({ status: 400, success: false, message: "Invalid Otp", data: null });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ status: 400, message: "Invalid Otp", data: null });
   }
 });
 module.exports = router;
