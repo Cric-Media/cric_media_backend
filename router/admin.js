@@ -69,49 +69,51 @@ router.post("/signup", async (req, res) =>
       res.status(400).json({
         status: 400,
         success: false,
-        message: "this email already used try to another email",
+        message: "This email is already used, try another one",
         data: null,
       });
-    }
-    const emailvarifyadd = new EmailVarify({
-      email: email,
-      code: code
-    });
-    const registered = await emailvarifyadd.save();
-    console.log(registered);
-    var transpoter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "wasimxaman13@gmail.com",
-        pass: Email_otp_pass,
-      },
-    });
-    var mailoption = {
-      from: "wasimxaman13@gmail.com",
-      to: email,
-      subject: "Varify Email",
-      text: `Varify Email OTP ${code}`,
-    };
-    transpoter.sendMail(mailoption, function (error, info)
-    {
-      if (error) {
-        console.log(error);
-        res.status(500).json({
-          status: 500,
-          success: false,
-          message: "Failed to send OTP email",
-          data: null,
-        });
-      } else {
-        console.log("Email sent: " + info.response);
-        res.status(201).json({
-          status: 201,
-          success: true,
-          message: "please check your email",
-          data: null,
-        });
-      }
-    });
+    } else {
+      const emailvarifyadd = new EmailVarify({
+        email: email,
+        code: code
+      });
+      const registered = await emailvarifyadd.save();
+      console.log(registered);
+      var transpoter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "wasimxaman13@gmail.com",
+          pass: Email_otp_pass,
+        },
+      });
+      var mailoption = {
+        from: "wasimxaman13@gmail.com",
+        to: email,
+        subject: "Varify Email",
+        text: `Varify Email OTP ${code}`,
+      };
+      transpoter.sendMail(mailoption, function (error, info)
+      {
+        if (error) {
+          console.log(error);
+          res.status(500).json({
+            status: 500,
+            success: false,
+            message: "Failed to send OTP email",
+            data: null,
+          });
+        } else {
+          console.log("Email sent: " + info.response);
+          res.status(201).json({
+            status: 201,
+            success: true,
+            message: "please check your email",
+            data: null,
+          });
+        }
+      });
+}
+   
 
 
   } catch (error) {
