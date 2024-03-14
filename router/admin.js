@@ -64,6 +64,15 @@ router.post("/signup", async (req, res) =>
   try {
     const email = req.body.email;
     const code = generateOTP();
+    const useremail = await providerRegister.findOne({ email: email });
+    if (useremail) {
+      res.status(400).json({
+        status: 400,
+        success: false,
+        message: "this email already used try to another email",
+        data: null,
+      });
+    }
     const emailvarifyadd = new EmailVarify({
       email: email,
       code: code
@@ -279,6 +288,7 @@ router.post("/send-otp-forpassword-change", async (req, res) =>
       const varifyemail = await otpData.save();
       res.status(201).json({
         status: 201,
+        success: true,
         message: "Send otp successfully",
         data: { Otp: random },
       });
@@ -329,18 +339,18 @@ router.post("/changePassword", async (req, res) =>
 {
   try {
     const email = req.body.email;
-        const mailVarify = await providerRegister.findOne({ email: email });
-        const password = req.body.password;
-        const ismatch = await bcrypt.compare(password, mailVarify.password);
-        console.log(ismatch);
-        mailVarify.password = password;
-        const registered = await mailVarify.save();
-        res.status(201).json({
-          status: 201,
-          success: true,
-          message: "password change successful",
-          data: null,
-        });
+    const mailVarify = await providerRegister.findOne({ email: email });
+    const password = req.body.password;
+    const ismatch = await bcrypt.compare(password, mailVarify.password);
+    console.log(ismatch);
+    mailVarify.password = password;
+    const registered = await mailVarify.save();
+    res.status(201).json({
+      status: 201,
+      success: true,
+      message: "password change successful",
+      data: null,
+    });
   } catch (error) {
     console.log(error);
     res.status(400).json({ status: 400, success: false, message: "Invalid email", data: null });
