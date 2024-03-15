@@ -31,7 +31,7 @@ const empoleeSchema = new mongoose.Schema(
     token: {
       type: String,
     },
-
+    status:Number,
     password: String,
     Phone: String,
     address: String,
@@ -72,6 +72,6 @@ empoleeSchema.pre("save", async function (next)
   next();
 });
 
-const providerRegister = new mongoose.model("userauth", empoleeSchema);
+const providerRegister = new mongoose.model("admin", empoleeSchema);
 
 module.exports = providerRegister;

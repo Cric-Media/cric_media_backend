@@ -13,11 +13,11 @@ const multer = require("multer");
 const auth = require("../middleware/auth");
 const { profile } = require("console");
 const cloudinary = require("cloudinary").v2;
-
+const mongoose = require('mongoose');
 
 const EmailVarify = require("../model/varifyemail")
 const providerRegister = require("../model/providerregister")
-
+const Player = require("../model/player")
 const cors = require("cors");
 var dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
@@ -44,7 +44,7 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 router.use("/ProfileImage", express.static("public/upload"));
-router.use("/image", express.static("public/upload"));
+router.use("/Image", express.static("public/upload"));
 router.use("/categoryThumbnail", express.static("public/upload"));
 function generateOTP()
 {
@@ -112,8 +112,8 @@ router.post("/signup", async (req, res) =>
           });
         }
       });
-}
-   
+    }
+
 
 
   } catch (error) {
@@ -144,6 +144,7 @@ router.post("/emailVrifyOtp", async (req, res) =>
           fullname: req.body.fullname,
           ProfileImage: null,
           address: null,
+          status: 1,
           Phone: req.body.phone,
           isVarified: false,
           isNewUser: true,
@@ -217,6 +218,7 @@ router.get("/get-user-detail/:_id", async (req, res) =>
       _id: 1,
       email: 1,
       Phone: 1,
+      status: 1,
       address: 1,
       fullname: 1,
       ProfileImage: 1,
@@ -224,7 +226,7 @@ router.get("/get-user-detail/:_id", async (req, res) =>
     res.status(200).json({
       status: 200,
       success: true,
-      message: "User details",
+      message: "admin details",
       data: data,
     });
   } catch (error) {
@@ -375,6 +377,93 @@ cron.schedule("59 23 */1 * *", async () =>
     console.log(`Deleted ${deletedCount} documents.`);
   } catch (error) {
     console.error("Error running cron job:", error);
+  }
+});
+router.post("/add-players", upload.single("Image"), async (req, res) =>
+{
+  try {
+    const { name, location, role, age, additionalInfo, admins, sixes, fours, wickets } = req.body;
+    const adminObjectIds = Array.isArray(admins) ? admins.map(id => mongoose.Types.ObjectId(id)) : [];
+    let ManuImage = null;
+
+    if (!name || !location || !role || !age) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: "name location role age parameter is missing",
+        data: null,
+      });
+    }
+
+    const file = req.file;
+    if (file) {
+      ManuImage = `data:image/png;base64,${file.buffer.toString("base64")}`;
+
+      const result = await cloudinary.uploader.upload(ManuImage);
+      ManuImage = result.url;
+    }
+
+    const MenuEmp = new Player({
+      name: name,
+      location: location,
+      role: role,
+      age: age,
+      additionalInfo: additionalInfo,
+      admins: adminObjectIds,
+      stats: {
+        sixes: sixes,
+        fours: fours,
+        wickets: wickets,
+      },
+      Image: ManuImage,
+    });
+    const savedPlayer = await MenuEmp.save();
+
+    res.status(201).json({
+      status: 201,
+      success: true,
+      message: "Player has been added successfully",
+      data: savedPlayer,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+});
+router.get("/get-player-detail-by-adminid/:admin", async (req, res) =>
+{
+  try {
+    const adminId = req.params.admin;
+    const data = await Player.findOne({ admins: adminId });
+
+    if (!data) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "Player not found for this admin ID",
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Player details",
+      data: data,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal server error",
+      data: null,
+    });
   }
 });
 module.exports = router;
