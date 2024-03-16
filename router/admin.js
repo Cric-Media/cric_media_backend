@@ -466,4 +466,127 @@ router.get("/get-player-detail-by-adminid/:admin", async (req, res) =>
     });
   }
 });
+router.get("/get-player-detail-by-playerid/:_id", async (req, res) =>
+{
+  try {
+    const playerId = req.params._id;
+    const data = await Player.findOne({ _id: playerId });
+
+    if (!data) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "Player not found for this player ID",
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Player details",
+      data: data,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal server error",
+      data: null,
+    });
+  }
+});
+router.delete("/delete-player-byid/:_id", async (req, res) =>
+{
+  try {
+    const playerId = req.params._id;
+    const deletedPlayer = await Player.findByIdAndDelete(playerId);
+
+    if (!deletedPlayer) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "Player not found",
+        data: null,
+      });
+    }
+
+    const image = deletedPlayer.Image;
+
+    if (image) {
+      const parts = image.split('/');
+
+      // Get the last part of the split array
+      const lastPart = parts[parts.length - 1];
+
+      // Split the last part by '.'
+      const publicId = lastPart.split('.')[0];
+
+      const result = await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+      console.log(result);
+    }
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Player deleted successfully",
+      data: null,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+      data: null,
+    });
+  }
+});
+router.put("/update-player/:_id", upload.single("Image"), async (req, res) =>
+{
+  try {
+    const productId = req.params._id;
+    const { name, location, role, age, additionalInfo, admins } = req.body;
+    const existingProduct = await Player.findById(productId);
+    if (!existingProduct) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "Player not found",
+        data: null,
+      });
+    }
+    let ManuImage = null;
+    if (req.file) {
+      ManuImage = `data:image/png;base64,${req.file.buffer.toString("base64")}`;
+      const result = await cloudinary.uploader.upload(ManuImage);
+      ManuImage = result.url;
+    } else {
+      ManuImage = existingProduct.Image;
+    }
+    existingProduct.name = name;
+    existingProduct.location = location;
+    existingProduct.role = role;
+    existingProduct.age = age;
+    existingProduct.additionalInfo = additionalInfo;
+    existingProduct.admins = admins;
+    existingProduct.Image = ManuImage;
+    const updatedProduct = await existingProduct.save();
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Player updated successfully",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+      data: null,
+    });
+  }
+});
 module.exports = router;
