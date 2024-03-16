@@ -469,7 +469,7 @@ router.get("/get-player-detail-by-adminid/:admin", async (req, res) =>
 router.get("/get-player-detail-by-playerid", async (req, res) =>
 {
   try {
-    const playerId = req.body._id;
+    const playerId = req.body.playerId;
     const data = await Player.findOne({ _id: playerId });
 
     if (!data) {
@@ -500,7 +500,7 @@ router.get("/get-player-detail-by-playerid", async (req, res) =>
 router.delete("/delete-player-byid", async (req, res) =>
 {
   try {
-    const playerId = req.body._id;
+    const playerId = req.body.playerId;
     const deletedPlayer = await Player.findByIdAndDelete(playerId);
 
     if (!deletedPlayer) {
@@ -546,7 +546,7 @@ router.delete("/delete-player-byid", async (req, res) =>
 router.put("/update-player", upload.single("Image"), async (req, res) =>
 {
   try {
-    const productId = req.body._id;
+    const productId = req.body.playerId;
     const { name, location, role, age, additionalInfo, admins } = req.body;
     const existingProduct = await Player.findById(productId);
     if (!existingProduct) {
