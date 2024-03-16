@@ -466,7 +466,7 @@ router.get("/get-player-detail-by-adminid/:admin", async (req, res) =>
     });
   }
 });
-router.get("/get-player-detail-by-playerid", async (req, res) =>
+router.post("/get-player-detail-by-playerid", async (req, res) =>
 {
   try {
     const playerId = req.body.playerId;
