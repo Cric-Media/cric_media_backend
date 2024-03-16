@@ -439,7 +439,7 @@ router.get("/get-player-detail-by-adminid/:admin", async (req, res) =>
 {
   try {
     const adminId = req.params.admin;
-    const data = await Player.findOne({ admins: adminId });
+    const data = await Player.find({ admins: adminId });
 
     if (!data) {
       return res.status(404).json({
