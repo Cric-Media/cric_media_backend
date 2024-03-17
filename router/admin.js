@@ -589,4 +589,62 @@ router.put("/update-player", upload.single("Image"), async (req, res) =>
     });
   }
 });
+router.post("/get-other-admin-by-adminid", async (req, res) =>
+{
+  try {
+    const adminID = req.body.adminID;
+    const page = parseInt(req.body.page) || 1; // Current page number, default is 1
+    const limit = parseInt(req.body.limit) || 10; // Number of documents per page, default is 10
+    const search = req.body.search || null; // Search string, default is null
+
+    // Calculate the number of documents to skip based on the page and limit
+    const skip = (page - 1) * limit;
+
+    let query = { _id: { $ne: adminID } };
+
+    // If search is provided and not null, add it to the query
+    if (search !== null) {
+      query = {
+        ...query,
+        fullname: { $regex: search, $options: "i" }, // Case-insensitive partial match for name
+      };
+    }
+
+    // Find all admin except the one with the provided adminID, with pagination and search
+    const data = await providerRegister
+      .find(query)
+      .skip(skip)
+      .limit(limit);
+
+    // If no data found, return an empty array instead of null
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "No other admins found",
+        data: [],
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Other admin details",
+      data: data,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal server error",
+      data: [],
+    });
+  }
+});
+
+
+
+
+
 module.exports = router;
