@@ -642,6 +642,53 @@ router.post("/get-other-admin-by-adminid", async (req, res) =>
     });
   }
 });
+router.put("/share-player", async (req, res) =>
+{
+  try {
+    const playerId = req.body.playerId;
+    const adminId = req.body.adminId;
+    const newAdmins = req.body.newAdmins; // Array of admin IDs to add
+
+    const player = await Player.findOne({ _id: playerId, admins: adminId });
+
+    if (!player) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "Player not found for this player ID",
+        data: null,
+      });
+    }
+
+    // Add new admins to the existing admins array
+    if (Array.isArray(newAdmins) && newAdmins.length > 0) {
+      newAdmins.forEach(newAdminId =>
+      {
+        if (!player.admins.includes(newAdminId)) {
+          player.admins.push(newAdminId);
+        }
+      });
+    }
+
+    // Save the updated player with new admins added
+    const updatedPlayer = await player.save();
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Player details updated with new admins",
+      data: updatedPlayer,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal server error",
+      data: null,
+    });
+  }
+});
 
 
 
