@@ -649,6 +649,17 @@ router.put("/share-player", async (req, res) =>
     const adminId = req.body.adminId;
     const newAdmins = req.body.newAdmins; // Array of admin IDs to add
 
+    // Check if the requesting admin is not blocked
+    const checkAdmin = await providerRegister.findOne({ _id: adminId });
+    if (!checkAdmin || checkAdmin.status === 0) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "This admin is either not found or blocked",
+        data: null,
+      });
+    }
+
     const player = await Player.findOne({ _id: playerId, admins: adminId });
 
     if (!player) {
@@ -689,6 +700,7 @@ router.put("/share-player", async (req, res) =>
     });
   }
 });
+
 
 
 
