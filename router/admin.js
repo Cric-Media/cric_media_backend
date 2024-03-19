@@ -18,7 +18,7 @@ const mongoose = require("mongoose");
 const EmailVarify = require("../model/varifyemail");
 const providerRegister = require("../model/providerregister");
 const Player = require("../model/player");
-const Team = require("../models/team");
+const Team = require("../model/team");
 const cors = require("cors");
 var dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
@@ -47,7 +47,8 @@ const upload = multer({ storage: storage });
 router.use("/ProfileImage", express.static("public/upload"));
 router.use("/Image", express.static("public/upload"));
 router.use("/categoryThumbnail", express.static("public/upload"));
-function generateOTP() {
+function generateOTP()
+{
   const digits = "0123456789";
   let OTP = "";
   for (let i = 0; i < 4; i++) {
@@ -55,7 +56,8 @@ function generateOTP() {
   }
   return OTP;
 }
-router.get("/", (req, res) => {
+router.get("/", (req, res) =>
+{
   res.json({
     status: 200,
     success: true,
@@ -63,7 +65,8 @@ router.get("/", (req, res) => {
     data: null,
   });
 });
-router.post("/signup", async (req, res) => {
+router.post("/signup", async (req, res) =>
+{
   try {
     const email = req.body.email;
     const code = generateOTP();
@@ -95,7 +98,8 @@ router.post("/signup", async (req, res) => {
         subject: "Varify Email",
         text: `Varify Email OTP ${code}`,
       };
-      transpoter.sendMail(mailoption, function (error, info) {
+      transpoter.sendMail(mailoption, function (error, info)
+      {
         if (error) {
           console.log(error);
           res.status(500).json({
@@ -122,7 +126,8 @@ router.post("/signup", async (req, res) => {
       .json({ status: 400, success: false, message: "not found", data: null });
   }
 });
-router.post("/emailVrifyOtp", async (req, res) => {
+router.post("/emailVrifyOtp", async (req, res) =>
+{
   try {
     const email = req.body.email;
     const code = req.body.code;
@@ -174,7 +179,8 @@ router.post("/emailVrifyOtp", async (req, res) => {
     });
   }
 });
-router.post("/Login", async (req, res) => {
+router.post("/Login", async (req, res) =>
+{
   try {
     const email = req.body.email;
     const password = req.body.password;
@@ -226,7 +232,8 @@ router.post("/Login", async (req, res) => {
     });
   }
 });
-router.get("/get-user-detail/:_id", async (req, res) => {
+router.get("/get-user-detail/:_id", async (req, res) =>
+{
   try {
     const _id = req.params._id;
     const data = await providerRegister.findOne({ _id: _id }).select({
@@ -254,7 +261,8 @@ router.get("/get-user-detail/:_id", async (req, res) => {
     });
   }
 });
-router.post("/send-otp-forpassword-change", async (req, res) => {
+router.post("/send-otp-forpassword-change", async (req, res) =>
+{
   try {
     let email = req.body.email;
     const mail = await providerRegister.findOne({ email: email });
@@ -286,7 +294,8 @@ router.post("/send-otp-forpassword-change", async (req, res) => {
         subject: "sending email using nodejs",
         text: `Varify Email OTP ${random}`,
       };
-      transpoter.sendMail(mailoption, function (error, info) {
+      transpoter.sendMail(mailoption, function (error, info)
+      {
         if (error) {
           console.log(error);
           res.status(500).json({
@@ -323,7 +332,8 @@ router.post("/send-otp-forpassword-change", async (req, res) => {
     });
   }
 });
-router.post("/password-otp-varify", async (req, res) => {
+router.post("/password-otp-varify", async (req, res) =>
+{
   try {
     const email = req.body.email;
     const code = req.body.code;
@@ -364,7 +374,8 @@ router.post("/password-otp-varify", async (req, res) => {
     });
   }
 });
-router.post("/changePassword", async (req, res) => {
+router.post("/changePassword", async (req, res) =>
+{
   try {
     const email = req.body.email;
     const mailVarify = await providerRegister.findOne({ email: email });
@@ -389,7 +400,8 @@ router.post("/changePassword", async (req, res) => {
     });
   }
 });
-const clearCollection = async () => {
+const clearCollection = async () =>
+{
   try {
     const result = await EmailVarify.deleteMany({});
     return result.deletedCount;
@@ -398,7 +410,8 @@ const clearCollection = async () => {
     throw error;
   }
 };
-cron.schedule("59 23 */1 * *", async () => {
+cron.schedule("59 23 */1 * *", async () =>
+{
   try {
     const deletedCount = await clearCollection();
     console.log(`Deleted ${deletedCount} documents.`);
@@ -406,7 +419,8 @@ cron.schedule("59 23 */1 * *", async () => {
     console.error("Error running cron job:", error);
   }
 });
-router.post("/add-players", upload.single("Image"), async (req, res) => {
+router.post("/add-players", upload.single("Image"), async (req, res) =>
+{
   try {
     const {
       name,
@@ -473,7 +487,8 @@ router.post("/add-players", upload.single("Image"), async (req, res) => {
     });
   }
 });
-router.get("/get-player-detail-by-adminid/:admin", async (req, res) => {
+router.get("/get-player-detail-by-adminid/:admin", async (req, res) =>
+{
   try {
     const adminId = req.params.admin;
     const data = await Player.find({ admins: adminId });
@@ -503,7 +518,8 @@ router.get("/get-player-detail-by-adminid/:admin", async (req, res) => {
     });
   }
 });
-router.post("/get-player-detail-by-playerid", async (req, res) => {
+router.post("/get-player-detail-by-playerid", async (req, res) =>
+{
   try {
     const playerId = req.body.playerId;
     const data = await Player.findOne({ _id: playerId });
@@ -533,7 +549,8 @@ router.post("/get-player-detail-by-playerid", async (req, res) => {
     });
   }
 });
-router.delete("/delete-player-byid", async (req, res) => {
+router.delete("/delete-player-byid", async (req, res) =>
+{
   try {
     const playerId = req.body.playerId;
     const deletedPlayer = await Player.findByIdAndDelete(playerId);
@@ -580,7 +597,8 @@ router.delete("/delete-player-byid", async (req, res) => {
     });
   }
 });
-router.put("/update-player", upload.single("Image"), async (req, res) => {
+router.put("/update-player", upload.single("Image"), async (req, res) =>
+{
   try {
     const productId = req.body.playerId;
     const { name, location, role, age, additionalInfo, admins } = req.body;
@@ -625,7 +643,8 @@ router.put("/update-player", upload.single("Image"), async (req, res) => {
     });
   }
 });
-router.post("/get-other-admin-by-adminid", async (req, res) => {
+router.post("/get-other-admin-by-adminid", async (req, res) =>
+{
   try {
     const adminID = req.body.adminID;
     const page = parseInt(req.body.page) || 1; // Current page number, default is 1
@@ -674,7 +693,8 @@ router.post("/get-other-admin-by-adminid", async (req, res) => {
     });
   }
 });
-router.put("/share-player", async (req, res) => {
+router.put("/share-player", async (req, res) =>
+{
   try {
     const playerId = req.body.playerId;
     const adminId = req.body.adminId;
@@ -704,7 +724,8 @@ router.put("/share-player", async (req, res) => {
 
     // Add new admins to the existing admins array
     if (Array.isArray(newAdmins) && newAdmins.length > 0) {
-      newAdmins.forEach((newAdminId) => {
+      newAdmins.forEach((newAdminId) =>
+      {
         if (!player.admins.includes(newAdminId)) {
           player.admins.push(newAdminId);
         }
@@ -732,7 +753,8 @@ router.put("/share-player", async (req, res) => {
 });
 
 // POST - Create a new team
-router.post("/add-team", async (req, res) => {
+router.post("/add-team", async (req, res) =>
+{
   try {
     const { name, location, admin, players } = req.body;
 
@@ -775,7 +797,8 @@ router.post("/add-team", async (req, res) => {
 });
 
 // POST - Get all teams belonging to a specific admin
-router.post("/teams", async (req, res) => {
+router.post("/teams", async (req, res) =>
+{
   try {
     const { adminId } = req.body;
 
@@ -812,7 +835,8 @@ router.post("/teams", async (req, res) => {
 });
 
 // GET - Get a single team by ID
-router.get("/teams/:id", async (req, res) => {
+router.get("/teams/:id", async (req, res) =>
+{
   try {
     const team = await Team.findById(req.params.id)
       .populate("admin")
@@ -845,7 +869,8 @@ router.get("/teams/:id", async (req, res) => {
 });
 
 // PUT - Update a team
-router.put("/teams/:id", async (req, res) => {
+router.put("/teams/:id", async (req, res) =>
+{
   try {
     const { name, location, admin, players } = req.body;
 
@@ -899,7 +924,8 @@ router.put("/teams/:id", async (req, res) => {
 });
 
 // DELETE - Delete a team
-router.delete("/teams/:id", async (req, res) => {
+router.delete("/teams/:id", async (req, res) =>
+{
   try {
     const deletedTeam = await Team.findByIdAndDelete(req.params.id);
 
