@@ -13,11 +13,12 @@ const multer = require("multer");
 const auth = require("../middleware/auth");
 const { profile } = require("console");
 const cloudinary = require("cloudinary").v2;
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const EmailVarify = require("../model/varifyemail")
-const providerRegister = require("../model/providerregister")
-const Player = require("../model/player")
+const EmailVarify = require("../model/varifyemail");
+const providerRegister = require("../model/providerregister");
+const Player = require("../model/player");
+const Team = require("../models/team");
 const cors = require("cors");
 var dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
@@ -46,21 +47,23 @@ const upload = multer({ storage: storage });
 router.use("/ProfileImage", express.static("public/upload"));
 router.use("/Image", express.static("public/upload"));
 router.use("/categoryThumbnail", express.static("public/upload"));
-function generateOTP()
-{
-  const digits = '0123456789';
-  let OTP = '';
+function generateOTP() {
+  const digits = "0123456789";
+  let OTP = "";
   for (let i = 0; i < 4; i++) {
     OTP += digits[Math.floor(Math.random() * 10)];
   }
   return OTP;
 }
-router.get("/", (req, res) =>
-{
-  res.json({ status: 200, success: true, message: "THIS IS HOME PAGE into development server", data: null });
+router.get("/", (req, res) => {
+  res.json({
+    status: 200,
+    success: true,
+    message: "THIS IS HOME PAGE into development server",
+    data: null,
+  });
 });
-router.post("/signup", async (req, res) =>
-{
+router.post("/signup", async (req, res) => {
   try {
     const email = req.body.email;
     const code = generateOTP();
@@ -75,7 +78,7 @@ router.post("/signup", async (req, res) =>
     } else {
       const emailvarifyadd = new EmailVarify({
         email: email,
-        code: code
+        code: code,
       });
       const registered = await emailvarifyadd.save();
       console.log(registered);
@@ -92,8 +95,7 @@ router.post("/signup", async (req, res) =>
         subject: "Varify Email",
         text: `Varify Email OTP ${code}`,
       };
-      transpoter.sendMail(mailoption, function (error, info)
-      {
+      transpoter.sendMail(mailoption, function (error, info) {
         if (error) {
           console.log(error);
           res.status(500).json({
@@ -113,16 +115,14 @@ router.post("/signup", async (req, res) =>
         }
       });
     }
-
-
-
   } catch (error) {
     console.log(error);
-    res.status(400).json({ status: 400, success: false, message: "not found", data: null });
+    res
+      .status(400)
+      .json({ status: 400, success: false, message: "not found", data: null });
   }
 });
-router.post("/emailVrifyOtp", async (req, res) =>
-{
+router.post("/emailVrifyOtp", async (req, res) => {
   try {
     const email = req.body.email;
     const code = req.body.code;
@@ -138,7 +138,6 @@ router.post("/emailVrifyOtp", async (req, res) =>
         });
       } else {
         const registerEmp = new providerRegister({
-
           password: req.body.password,
           email: email,
           fullname: req.body.fullname,
@@ -158,15 +157,24 @@ router.post("/emailVrifyOtp", async (req, res) =>
         });
       }
     } else {
-      res.status(400).json({ status: 400, success: false, message: "Invalid Otp", data: null });
+      res.status(400).json({
+        status: 400,
+        success: false,
+        message: "Invalid Otp",
+        data: null,
+      });
     }
   } catch (error) {
     console.log(error);
-    res.status(400).json({ status: 400, success: false, message: "Invalid Otp", data: null });
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: "Invalid Otp",
+      data: null,
+    });
   }
 });
-router.post("/Login", async (req, res) =>
-{
+router.post("/Login", async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
@@ -201,17 +209,24 @@ router.post("/Login", async (req, res) =>
         },
       });
     } else {
-      res
-        .status(404)
-        .json({ status: 400, success: false, message: "Invalid Password", data: null });
+      res.status(404).json({
+        status: 400,
+        success: false,
+        message: "Invalid Password",
+        data: null,
+      });
     }
   } catch (error) {
     console.log(error);
-    res.status(400).json({ status: 400, success: false, message: "invalid email", data: null });
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: "invalid email",
+      data: null,
+    });
   }
 });
-router.get("/get-user-detail/:_id", async (req, res) =>
-{
+router.get("/get-user-detail/:_id", async (req, res) => {
   try {
     const _id = req.params._id;
     const data = await providerRegister.findOne({ _id: _id }).select({
@@ -239,15 +254,17 @@ router.get("/get-user-detail/:_id", async (req, res) =>
     });
   }
 });
-router.post("/send-otp-forpassword-change", async (req, res) =>
-{
+router.post("/send-otp-forpassword-change", async (req, res) => {
   try {
     let email = req.body.email;
     const mail = await providerRegister.findOne({ email: email });
     if (!mail) {
-      res
-        .status(404)
-        .json({ status: 400, success: false, message: "This email not exist", data: null });
+      res.status(404).json({
+        status: 400,
+        success: false,
+        message: "This email not exist",
+        data: null,
+      });
     } else {
       const random = generateOTP();
       console.log(random);
@@ -269,8 +286,7 @@ router.post("/send-otp-forpassword-change", async (req, res) =>
         subject: "sending email using nodejs",
         text: `Varify Email OTP ${random}`,
       };
-      transpoter.sendMail(mailoption, function (error, info)
-      {
+      transpoter.sendMail(mailoption, function (error, info) {
         if (error) {
           console.log(error);
           res.status(500).json({
@@ -307,8 +323,7 @@ router.post("/send-otp-forpassword-change", async (req, res) =>
     });
   }
 });
-router.post("/password-otp-varify", async (req, res) =>
-{
+router.post("/password-otp-varify", async (req, res) => {
   try {
     const email = req.body.email;
     const code = req.body.code;
@@ -332,15 +347,24 @@ router.post("/password-otp-varify", async (req, res) =>
         });
       }
     } else {
-      res.status(400).json({ status: 400, success: false, message: "Invalid Otp", data: null });
+      res.status(400).json({
+        status: 400,
+        success: false,
+        message: "Invalid Otp",
+        data: null,
+      });
     }
   } catch (error) {
     console.log(error);
-    res.status(400).json({ status: 400, success: false, message: "Invalid Otp", data: null });
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: "Invalid Otp",
+      data: null,
+    });
   }
 });
-router.post("/changePassword", async (req, res) =>
-{
+router.post("/changePassword", async (req, res) => {
   try {
     const email = req.body.email;
     const mailVarify = await providerRegister.findOne({ email: email });
@@ -357,11 +381,15 @@ router.post("/changePassword", async (req, res) =>
     });
   } catch (error) {
     console.log(error);
-    res.status(400).json({ status: 400, success: false, message: "Invalid email", data: null });
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: "Invalid email",
+      data: null,
+    });
   }
 });
-const clearCollection = async () =>
-{
+const clearCollection = async () => {
   try {
     const result = await EmailVarify.deleteMany({});
     return result.deletedCount;
@@ -370,8 +398,7 @@ const clearCollection = async () =>
     throw error;
   }
 };
-cron.schedule("59 23 */1 * *", async () =>
-{
+cron.schedule("59 23 */1 * *", async () => {
   try {
     const deletedCount = await clearCollection();
     console.log(`Deleted ${deletedCount} documents.`);
@@ -379,11 +406,22 @@ cron.schedule("59 23 */1 * *", async () =>
     console.error("Error running cron job:", error);
   }
 });
-router.post("/add-players", upload.single("Image"), async (req, res) =>
-{
+router.post("/add-players", upload.single("Image"), async (req, res) => {
   try {
-    const { name, location, role, age, additionalInfo, admins, sixes, fours, wickets } = req.body;
-    const adminObjectIds = Array.isArray(admins) ? admins.map(id => mongoose.Types.ObjectId(id)) : [];
+    const {
+      name,
+      location,
+      role,
+      age,
+      additionalInfo,
+      admins,
+      sixes,
+      fours,
+      wickets,
+    } = req.body;
+    const adminObjectIds = Array.isArray(admins)
+      ? admins.map((id) => mongoose.Types.ObjectId(id))
+      : [];
     let ManuImage = null;
 
     if (!name || !location || !role || !age) {
@@ -435,8 +473,7 @@ router.post("/add-players", upload.single("Image"), async (req, res) =>
     });
   }
 });
-router.get("/get-player-detail-by-adminid/:admin", async (req, res) =>
-{
+router.get("/get-player-detail-by-adminid/:admin", async (req, res) => {
   try {
     const adminId = req.params.admin;
     const data = await Player.find({ admins: adminId });
@@ -466,8 +503,7 @@ router.get("/get-player-detail-by-adminid/:admin", async (req, res) =>
     });
   }
 });
-router.post("/get-player-detail-by-playerid", async (req, res) =>
-{
+router.post("/get-player-detail-by-playerid", async (req, res) => {
   try {
     const playerId = req.body.playerId;
     const data = await Player.findOne({ _id: playerId });
@@ -497,8 +533,7 @@ router.post("/get-player-detail-by-playerid", async (req, res) =>
     });
   }
 });
-router.delete("/delete-player-byid", async (req, res) =>
-{
+router.delete("/delete-player-byid", async (req, res) => {
   try {
     const playerId = req.body.playerId;
     const deletedPlayer = await Player.findByIdAndDelete(playerId);
@@ -515,15 +550,17 @@ router.delete("/delete-player-byid", async (req, res) =>
     const image = deletedPlayer.Image;
 
     if (image) {
-      const parts = image.split('/');
+      const parts = image.split("/");
 
       // Get the last part of the split array
       const lastPart = parts[parts.length - 1];
 
       // Split the last part by '.'
-      const publicId = lastPart.split('.')[0];
+      const publicId = lastPart.split(".")[0];
 
-      const result = await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+      const result = await cloudinary.uploader.destroy(publicId, {
+        resource_type: "image",
+      });
       console.log(result);
     }
 
@@ -543,8 +580,7 @@ router.delete("/delete-player-byid", async (req, res) =>
     });
   }
 });
-router.put("/update-player", upload.single("Image"), async (req, res) =>
-{
+router.put("/update-player", upload.single("Image"), async (req, res) => {
   try {
     const productId = req.body.playerId;
     const { name, location, role, age, additionalInfo, admins } = req.body;
@@ -589,8 +625,7 @@ router.put("/update-player", upload.single("Image"), async (req, res) =>
     });
   }
 });
-router.post("/get-other-admin-by-adminid", async (req, res) =>
-{
+router.post("/get-other-admin-by-adminid", async (req, res) => {
   try {
     const adminID = req.body.adminID;
     const page = parseInt(req.body.page) || 1; // Current page number, default is 1
@@ -611,10 +646,7 @@ router.post("/get-other-admin-by-adminid", async (req, res) =>
     }
 
     // Find all admin except the one with the provided adminID, with pagination and search
-    const data = await providerRegister
-      .find(query)
-      .skip(skip)
-      .limit(limit);
+    const data = await providerRegister.find(query).skip(skip).limit(limit);
 
     // If no data found, return an empty array instead of null
     if (!data || data.length === 0) {
@@ -642,8 +674,7 @@ router.post("/get-other-admin-by-adminid", async (req, res) =>
     });
   }
 });
-router.put("/share-player", async (req, res) =>
-{
+router.put("/share-player", async (req, res) => {
   try {
     const playerId = req.body.playerId;
     const adminId = req.body.adminId;
@@ -673,8 +704,7 @@ router.put("/share-player", async (req, res) =>
 
     // Add new admins to the existing admins array
     if (Array.isArray(newAdmins) && newAdmins.length > 0) {
-      newAdmins.forEach(newAdminId =>
-      {
+      newAdmins.forEach((newAdminId) => {
         if (!player.admins.includes(newAdminId)) {
           player.admins.push(newAdminId);
         }
@@ -701,9 +731,187 @@ router.put("/share-player", async (req, res) =>
   }
 });
 
+// POST - Create a new team
+router.post("/add-team", async (req, res) => {
+  try {
+    const { name, location, admin, players } = req.body;
 
+    // Basic validation
+    if (!name || !location || !admin) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: "Name, location, and admin are required fields.",
+        data: null,
+      });
+    }
 
+    // Create a new team
+    const newTeam = new Team({
+      name: name,
+      location: location,
+      admin: mongoose.Types.ObjectId(admin),
+      players: players ? players.map((id) => mongoose.Types.ObjectId(id)) : [],
+    });
 
+    // Save the new team to the database
+    const savedTeam = await newTeam.save();
 
+    res.status(201).json({
+      status: 201,
+      success: true,
+      message: "Team has been added successfully",
+      data: savedTeam,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+});
+
+// GET - Get all teams
+router.get("/teams", async (req, res) => {
+  try {
+    const teams = await Team.find().populate("admin").populate("players");
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Teams retrieved successfully",
+      data: teams,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+});
+
+// GET - Get a single team by ID
+router.get("/teams/:id", async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id)
+      .populate("admin")
+      .populate("players");
+
+    if (!team) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "Team not found",
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Team retrieved successfully",
+      data: team,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+});
+
+// PUT - Update a team
+router.put("/teams/:id", async (req, res) => {
+  try {
+    const { name, location, admin, players } = req.body;
+
+    // Basic validation
+    if (!name || !location || !admin) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: "Name, location, and admin are required fields.",
+        data: null,
+      });
+    }
+
+    const updatedTeam = await Team.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: name,
+        location: location,
+        admin: mongoose.Types.ObjectId(admin),
+        players: players
+          ? players.map((id) => mongoose.Types.ObjectId(id))
+          : [],
+      },
+      { new: true }
+    );
+
+    if (!updatedTeam) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "Team not found",
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Team updated successfully",
+      data: updatedTeam,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+});
+
+// DELETE - Delete a team
+router.delete("/teams/:id", async (req, res) => {
+  try {
+    const deletedTeam = await Team.findByIdAndDelete(req.params.id);
+
+    if (!deletedTeam) {
+      return res.status(404).json({
+        status: 404,
+        success: false,
+        message: "Team not found",
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Team deleted successfully",
+      data: deletedTeam,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 500,
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+});
 
 module.exports = router;
