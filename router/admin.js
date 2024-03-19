@@ -761,7 +761,7 @@ router.post("/add-team", upload.single("image"), async (req, res) => {
       admin: admin,
       players: playerID,
 
-      Image: ManuImage,
+      image: ManuImage,
     });
     const savedPlayer = await MenuEmp.save();
 
