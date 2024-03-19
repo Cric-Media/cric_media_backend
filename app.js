@@ -1,4 +1,5 @@
 var express = require("express");
+
 var app = express();
 var dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
@@ -12,7 +13,6 @@ app.use(admin);
 var swaggerUi = require("swagger-ui-express"),
   swaggerDocument = require("./swagger.json");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.listen(PORT, function ()
-{
+app.listen(PORT, function () {
   console.log("server is runing ".concat(PORT));
 });

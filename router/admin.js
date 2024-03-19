@@ -731,10 +731,18 @@ router.put("/share-player", async (req, res) => {
   }
 });
 
-// POST - Create a new team
-router.post("/add-team", async (req, res) => {
+// POST - Create a new team with image upload
+router.post("/add-team", upload.single("image"), async (req, res) => {
   try {
     const { name, location, admin, players } = req.body;
+    console.log(name, location, admin, players);
+    const adminObjectIds = Array.isArray(admin)
+      ? admin.map((id) => mongoose.Types.ObjectId(id))
+      : [];
+    const playerObjectIds = Array.isArray(players)
+      ? players.map((id) => mongoose.Types.ObjectId(id))
+      : [];
+    let teamImage = null;
 
     // Basic validation
     if (!name || !location || !admin) {
@@ -746,12 +754,23 @@ router.post("/add-team", async (req, res) => {
       });
     }
 
-    // Create a new team
+    const file = req.file;
+    if (file) {
+      // Upload image to Cloudinary
+      const result = await cloudinary.uploader.upload(
+        file.buffer.toString("base64")
+      );
+
+      teamImage = result.url;
+    }
+
+    // Create a new team instance
     const newTeam = new Team({
       name: name,
       location: location,
-      admin: mongoose.Types.ObjectId(admin),
-      players: players ? players.map((id) => mongoose.Types.ObjectId(id)) : [],
+      admin: adminObjectIds,
+      players: playerObjectIds,
+      image: teamImage,
     });
 
     // Save the new team to the database
