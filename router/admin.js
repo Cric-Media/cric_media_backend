@@ -730,8 +730,6 @@ router.put("/share-player", async (req, res) => {
     });
   }
 });
-
-// POST - Create a new team
 router.post("/add-team", upload.single("Image"), async (req, res) => {
   try {
     const { name, location, admin, players } = req.body;
@@ -783,8 +781,6 @@ router.post("/add-team", upload.single("Image"), async (req, res) => {
     });
   }
 });
-
-// POST - Get all teams belonging to a specific admin
 router.post("/get-teams", async (req, res) => {
   try {
     const { adminId } = req.body;
@@ -808,124 +804,6 @@ router.post("/get-teams", async (req, res) => {
       success: true,
       message: "Teams fetched successfully",
       data: teams,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: 500,
-      success: false,
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-});
-
-// GET - Get a single team by ID
-router.get("/teams/:id", async (req, res) => {
-  try {
-    const team = await Team.findById(req.params.id)
-      .populate("admin")
-      .populate("players");
-
-    if (!team) {
-      return res.status(404).json({
-        status: 404,
-        success: false,
-        message: "Team not found",
-        data: null,
-      });
-    }
-
-    res.status(200).json({
-      status: 200,
-      success: true,
-      message: "Team retrieved successfully",
-      data: team,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: 500,
-      success: false,
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-});
-
-// PUT - Update a team
-router.put("/teams/:id", async (req, res) => {
-  try {
-    const { name, location, admin, players } = req.body;
-
-    // Basic validation
-    if (!name || !location || !admin) {
-      return res.status(400).json({
-        status: 400,
-        success: false,
-        message: "Name, location, and admin are required fields.",
-        data: null,
-      });
-    }
-
-    const updatedTeam = await Team.findByIdAndUpdate(
-      req.params.id,
-      {
-        name: name,
-        location: location,
-        admin: mongoose.Types.ObjectId(admin),
-        players: players
-          ? players.map((id) => mongoose.Types.ObjectId(id))
-          : [],
-      },
-      { new: true }
-    );
-
-    if (!updatedTeam) {
-      return res.status(404).json({
-        status: 404,
-        success: false,
-        message: "Team not found",
-        data: null,
-      });
-    }
-
-    res.status(200).json({
-      status: 200,
-      success: true,
-      message: "Team updated successfully",
-      data: updatedTeam,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: 500,
-      success: false,
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-});
-
-// DELETE - Delete a team
-router.delete("/teams/:id", async (req, res) => {
-  try {
-    const deletedTeam = await Team.findByIdAndDelete(req.params.id);
-
-    if (!deletedTeam) {
-      return res.status(404).json({
-        status: 404,
-        success: false,
-        message: "Team not found",
-        data: null,
-      });
-    }
-
-    res.status(200).json({
-      status: 200,
-      success: true,
-      message: "Team deleted successfully",
-      data: deletedTeam,
     });
   } catch (error) {
     console.log(error);
