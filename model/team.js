@@ -3,7 +3,10 @@ const mongoose = require("mongoose");
 const teamSchema = new mongoose.Schema({
   name: String,
   location: String,
-  image: String,
+  image: {
+    required: true,
+    type: String,
+  },
   admin: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "admin", // Reference to the Admin model

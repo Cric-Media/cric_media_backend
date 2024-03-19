@@ -730,7 +730,7 @@ router.put("/share-player", async (req, res) => {
     });
   }
 });
-router.post("/add-team", upload.single("Image"), async (req, res) => {
+router.post("/add-team", upload.single("image"), async (req, res) => {
   try {
     const { name, location, admin, players } = req.body;
     const playerID = Array.isArray(players)
@@ -797,7 +797,7 @@ router.post("/get-teams", async (req, res) => {
     // Find teams where admin matches adminId
     const teams = await Team.find({ admin: adminId })
       .populate("players")
-      .populate("admin", "fullname image");
+      .populate("admin");
 
     res.status(200).json({
       status: 200,
