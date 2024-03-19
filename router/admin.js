@@ -774,10 +774,25 @@ router.post("/add-team", async (req, res) => {
   }
 });
 
-// GET - Get all teams
-router.get("/teams", async (req, res) => {
+// POST - Get all teams belonging to a specific admin
+router.post("/teams", async (req, res) => {
   try {
-    const teams = await Team.find().populate("admin").populate("players");
+    const { adminId } = req.body;
+
+    // Basic validation
+    if (!adminId) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: "adminId is required.",
+        data: null,
+      });
+    }
+
+    // Find all teams where the admin matches the provided adminId
+    const teams = await Team.find({ admin: adminId })
+      .populate("admin")
+      .populate("players");
 
     res.status(200).json({
       status: 200,
