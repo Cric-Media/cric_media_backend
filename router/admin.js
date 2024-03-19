@@ -18,7 +18,7 @@ const mongoose = require("mongoose");
 const EmailVarify = require("../model/varifyemail");
 const providerRegister = require("../model/providerregister");
 const Player = require("../model/player");
-const Team = require("../models/team");
+const Team = require("../model/team");
 const cors = require("cors");
 var dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
@@ -731,8 +731,8 @@ router.put("/share-player", async (req, res) => {
   }
 });
 
-// POST - Create a new team with image upload
-router.post("/add-team", upload.single("image"), async (req, res) => {
+// POST - Create a new team
+router.post("/add-team", async (req, res) => {
   try {
     const { name, location, admin, players } = req.body;
     console.log(name, location, admin, players);
