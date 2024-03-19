@@ -6,7 +6,7 @@ const teamSchema = new mongoose.Schema({
   image: String,
   admin: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Admin", // Reference to the Admin model
+    ref: "admin", // Reference to the Admin model
   },
   players: [
     {

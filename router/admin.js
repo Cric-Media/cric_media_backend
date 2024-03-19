@@ -732,55 +732,46 @@ router.put("/share-player", async (req, res) => {
 });
 
 // POST - Create a new team
-router.post("/add-team", async (req, res) => {
+router.post("/add-team", upload.single("Image"), async (req, res) => {
   try {
     const { name, location, admin, players } = req.body;
-    console.log(name, location, admin, players);
-    const adminObjectIds = Array.isArray(admin)
-      ? admin.map((id) => mongoose.Types.ObjectId(id))
-      : [];
-    const playerObjectIds = Array.isArray(players)
+    const playerID = Array.isArray(players)
       ? players.map((id) => mongoose.Types.ObjectId(id))
       : [];
-    let teamImage = null;
+    let ManuImage = null;
 
-    // Basic validation
-    if (!name || !location || !admin) {
+    if (!name || !location) {
       return res.status(400).json({
         status: 400,
         success: false,
-        message: "Name, location, and admin are required fields.",
+        message: "name location parameter is missing",
         data: null,
       });
     }
 
     const file = req.file;
     if (file) {
-      // Upload image to Cloudinary
-      const result = await cloudinary.uploader.upload(
-        file.buffer.toString("base64")
-      );
+      ManuImage = `data:image/png;base64,${file.buffer.toString("base64")}`;
 
-      teamImage = result.url;
+      const result = await cloudinary.uploader.upload(ManuImage);
+      ManuImage = result.url;
     }
 
-    // Create a new team instance
-    const newTeam = new Team({
+    const MenuEmp = new Team({
       name: name,
       location: location,
-      admin: adminObjectIds,
-      players: playerObjectIds,
-      image: teamImage,
-    });
+      admin: admin,
+      players: playerID,
 
-    // Save the new team to the database
-    const savedTeam = await newTeam.save();
+      Image: ManuImage,
+    });
+    const savedPlayer = await MenuEmp.save();
 
     res.status(201).json({
       status: 201,
       success: true,
       message: "Team has been added successfully",
-      data: savedTeam,
+      data: savedPlayer,
     });
   } catch (error) {
     console.log(error);
@@ -794,29 +785,28 @@ router.post("/add-team", async (req, res) => {
 });
 
 // POST - Get all teams belonging to a specific admin
-router.post("/teams", async (req, res) => {
+router.post("/get-teams", async (req, res) => {
   try {
     const { adminId } = req.body;
 
-    // Basic validation
     if (!adminId) {
       return res.status(400).json({
         status: 400,
         success: false,
-        message: "adminId is required.",
+        message: "adminId parameter is missing",
         data: null,
       });
     }
 
-    // Find all teams where the admin matches the provided adminId
+    // Find teams where admin matches adminId
     const teams = await Team.find({ admin: adminId })
-      .populate("admin")
-      .populate("players");
+      .populate("players")
+      .populate("admin", "fullname image");
 
     res.status(200).json({
       status: 200,
       success: true,
-      message: "Teams retrieved successfully",
+      message: "Teams fetched successfully",
       data: teams,
     });
   } catch (error) {
