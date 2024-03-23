@@ -11,15 +11,13 @@ const SECRET = process.env.SECRET;
 
 const empoleeSchema = new mongoose.Schema(
   {
-    
     email: {
       type: String,
       required: true,
       trim: true,
       lowercase: true,
       unique: true,
-      validate(value)
-      {
+      validate(value) {
         if (!validator.isEmail(value)) {
           throw new Error("Invalid Email");
         }
@@ -31,12 +29,12 @@ const empoleeSchema = new mongoose.Schema(
     token: {
       type: String,
     },
-    status:Number,
+    status: Number,
     password: String,
     Phone: String,
     address: String,
     ProfileImage: String,
-   
+
     fullname: String,
     expireIn: Number,
   },
@@ -45,10 +43,7 @@ const empoleeSchema = new mongoose.Schema(
   }
 );
 
-
-
-empoleeSchema.methods.generateAuthToken = async function ()
-{
+empoleeSchema.methods.generateAuthToken = async function () {
   try {
     const token = jwt.sign({ _id: this._id.toString() }, SECRET, {
       expiresIn: "30d",
@@ -64,8 +59,7 @@ empoleeSchema.methods.generateAuthToken = async function ()
   }
 };
 
-empoleeSchema.pre("save", async function (next)
-{
+empoleeSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 10);
   }

@@ -120,10 +120,13 @@ router.post("/signup", async (req, res) =>
       });
     }
   } catch (error) {
-    console.log(error);
-    res
-      .status(400)
-      .json({ status: 400, success: false, message: "not found", data: null });
+    // console.log(error);
+    // res
+    //   .status(400)
+    //   .json({ status: 400, success: false, message: "not found", data: null });
+    const err = new Error(error);
+    err.status = 500;
+    next(err);
   }
 });
 router.post("/emailVrifyOtp", async (req, res) =>
