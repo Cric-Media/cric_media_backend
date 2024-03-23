@@ -698,7 +698,7 @@ router.put("/share-player", async (req, res) =>
   try {
     const playerId = req.body.playerId;
     const adminId = req.body.adminId;
-    const newAdmins = req.body.newAdmins; // Array of admin IDs to add
+    const newAdmins = req.body.newAdmins;
 
     // Check if the requesting admin is not blocked
     const checkAdmin = await providerRegister.findOne({ _id: adminId });
@@ -717,19 +717,24 @@ router.put("/share-player", async (req, res) =>
       return res.status(404).json({
         status: 404,
         success: false,
-        message: "Player not found for this player ID",
+        message: "Player not found for this player ID or you are not an admin of this player",
         data: null,
       });
     }
 
-    // Add new admins to the existing admins array
     if (Array.isArray(newAdmins) && newAdmins.length > 0) {
-      newAdmins.forEach((newAdminId) =>
-      {
+      for (const newAdminId of newAdmins) {
         if (!player.admins.includes(newAdminId)) {
           player.admins.push(newAdminId);
+        } else {
+          return res.status(400).json({
+            status: 400,
+            success: false,
+            message: `Admin with ID ${newAdminId} already exists for this player`,
+            data: null,
+          });
         }
-      });
+      }
     }
 
     // Save the updated player with new admins added
@@ -751,6 +756,7 @@ router.put("/share-player", async (req, res) =>
     });
   }
 });
+
 router.post("/add-team", upload.single("image"), async (req, res) =>
 {
   try {
@@ -937,9 +943,8 @@ router.put("/in-team-add-player", async (req, res) =>
   try {
     const teamID = req.body.teamID;
     const adminId = req.body.adminId;
-    const newPlayers = req.body.newPlayers; // Array of player IDs to add
-
-    // Check if the requesting admin is not blocked
+    const newPlayers = req.body.newPlayers;
+ 
     const checkAdmin = await providerRegister.findOne({ _id: adminId });
     if (!checkAdmin || checkAdmin.status === 0) {
       return res.status(404).json({
@@ -961,17 +966,21 @@ router.put("/in-team-add-player", async (req, res) =>
       });
     }
 
-    // Add new players to the existing players array
     if (Array.isArray(newPlayers) && newPlayers.length > 0) {
-      newPlayers.forEach(async (newPlayerId) =>
-      {
+      for (const newPlayerId of newPlayers) {
         if (!team.players.includes(newPlayerId)) {
           team.players.push(newPlayerId);
+        } else {
+          return res.status(400).json({
+            status: 400,
+            success: false,
+            message: `Player with ID ${newPlayerId} already exists in the team`,
+            data: null,
+          });
         }
-      });
+      }
     }
 
-    // Save the updated team with new players added
     const updatedTeam = await team.save();
 
     res.status(200).json({
@@ -995,7 +1004,7 @@ router.put("/share-team", async (req, res) =>
   try {
     const teamID = req.body.teamID;
     const adminId = req.body.adminId;
-    const newAdmins = req.body.newAdmins; // Array of admin IDs to add
+    const newAdmins = req.body.newAdmins;
 
     // Check if the requesting admin is not blocked
     const checkAdmin = await providerRegister.findOne({ _id: adminId });
@@ -1008,9 +1017,9 @@ router.put("/share-team", async (req, res) =>
       });
     }
 
-    const player = await Team.findOne({ _id: teamID, admin: adminId });
+    const team = await Team.findOne({ _id: teamID, admin: adminId });
 
-    if (!player) {
+    if (!team) {
       return res.status(404).json({
         status: 404,
         success: false,
@@ -1019,24 +1028,29 @@ router.put("/share-team", async (req, res) =>
       });
     }
 
-    // Add new admins to the existing admins array
     if (Array.isArray(newAdmins) && newAdmins.length > 0) {
-      newAdmins.forEach((newAdminId) =>
-      {
-        if (!player.admin.includes(newAdminId)) {
-          player.admin.push(newAdminId);
+      for (const newAdminId of newAdmins) {
+        if (!team.admin.includes(newAdminId)) {
+          team.admin.push(newAdminId);
+        } else {
+          return res.status(400).json({
+            status: 400,
+            success: false,
+            message: `Admin with ID ${newAdminId} already exists in the team`,
+            data: null,
+          });
         }
-      });
+      }
     }
 
-    // Save the updated player with new admins added
-    const updatedPlayer = await player.save();
+    // Save the updated team with new admins added
+    const updatedTeam = await team.save();
 
     res.status(200).json({
       status: 200,
       success: true,
       message: "Team details updated with new admins",
-      data: updatedPlayer,
+      data: updatedTeam,
     });
   } catch (error) {
     console.log(error);
