@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const teamDetailsSchema = new mongoose.Schema({
+const matchDetailsSchema = new mongoose.Schema({
   team1: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
   team2: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
   matchType: String,
@@ -16,6 +16,6 @@ const teamDetailsSchema = new mongoose.Schema({
   matchStatus: { type: String, enum: ["upcoming", "ongoing", "completed"] },
 });
 
-const TeamDetails = mongoose.model("TeamDetails", teamDetailsSchema);
+const MatchDetails = mongoose.model("MatchDetails", matchDetailsSchema);
 
-module.exports = TeamDetails;
+module.exports = MatchDetails;
