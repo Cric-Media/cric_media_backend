@@ -17,6 +17,12 @@ const playerSchema = new mongoose.Schema({
     sixes: { type: Number, default: 0 },
     fours: { type: Number, default: 0 },
     wickets: { type: Number, default: 0 },
+    catches: { type: Number, default: 0 },
+    runs: { type: Number, default: 0 },
+    balls: { type: Number, default: 0 },
+    fifties: { type: Number, default: 0 },
+    hundreds: { type: Number, default: 0 },
+
     // Add other fields as needed
   },
 });
