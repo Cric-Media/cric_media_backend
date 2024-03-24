@@ -1,19 +1,27 @@
 const mongoose = require("mongoose");
 
 const matchDetailsSchema = new mongoose.Schema({
-  team1: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
-  team2: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
-  matchType: String,
-  ballType: String,
-  pitchType: String,
-  numberOfOvers: Number,
-  oversPerBowler: Number,
-  cityOrTown: String,
-  ground: String,
-  matchDateTime: Date,
-  whoWinTheToss: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
-  tossDetails: String,
-  matchStatus: { type: String, enum: ["upcoming", "ongoing", "completed"] },
+  team1: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
+  team2: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
+  matchType: { type: String, required: true },
+  ballType: { type: String, required: true },
+  pitchType: { type: String, required: true },
+  numberOfOvers: { type: Number, required: true },
+  oversPerBowler: { type: Number, required: true },
+  cityOrTown: { type: String, required: true },
+  ground: { type: String, required: true },
+  matchDateTime: { type: Date, required: true },
+  whoWinTheToss: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Team",
+    required: true,
+  },
+  tossDetails: { type: String, required: true },
+  matchStatus: {
+    type: String,
+    enum: ["upcoming", "ongoing", "completed"],
+    required: true,
+  },
 });
 
 const MatchDetails = mongoose.model("MatchDetails", matchDetailsSchema);
