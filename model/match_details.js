@@ -11,17 +11,25 @@ const matchDetailsSchema = new mongoose.Schema({
   cityOrTown: { type: String, required: true },
   ground: { type: String, required: true },
   matchDateTime: { type: Date, required: true },
-  whoWinTheToss: {
+  whoWinsTheToss: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Team",
     required: true,
   },
   tossDetails: { type: String, required: true },
-  matchStatus: {
-    type: String,
-    enum: ["upcoming", "ongoing", "completed"],
-    required: true,
-  },
+  matchStatus: { type: String, required: true },
+  team1Score: Number,
+  team2Score: Number,
+  team1Overs: Number,
+  team1Balls: Number,
+  team2Overs: Number,
+  team2Balls: Number,
+  squad1: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Player", required: true },
+  ],
+  squad2: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Player", required: true },
+  ],
 });
 
 const MatchDetails = mongoose.model("MatchDetails", matchDetailsSchema);
