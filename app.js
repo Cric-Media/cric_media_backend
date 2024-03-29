@@ -19,6 +19,7 @@ app.use((error, req, res, next) => {
     .status(status)
     .json({ message: message, status: status, success: success, data: data });
 });
+
 var swaggerUi = require("swagger-ui-express"),
   swaggerDocument = require("./swagger.json");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
